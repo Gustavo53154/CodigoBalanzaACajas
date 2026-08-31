@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora EAN-13 Ciberpunk</title>
+    <style>
+        :root {
+            /* 1. Colores Principales */
+            --bg-app: #050a0e;
+            --bg-card: #07121a;
+            --accent-neon: #00e5ff;
+            --glow: rgba(0, 229, 255, 0.35);
+            
+            /* 2. Colores Semánticos y de Estado */
+            --color-success: #3ee08a;
+            --color-error: #ff5c5c;
+            
+            /* 3. Colores de Texto y Tipografía */
+            --text-muted: #5a7d90;
+            --text-secondary: #8ba2b0;
+            
+            /* 4. Elementos Secundarios y Botones */
+            --bg-btn-sec: #061520;
+            --bg-badge: #08212e;
+            --bg-btn-action: #002b36;
+            --bg-alert: #040e16;
+            --overlay: rgba(3, 7, 10, 0.94);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 12px;
+            padding: 28px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 0 25px var(--glow);
+        }
+
+        h1 {
+            color: var(--accent-neon);
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px var(--glow);
+        }
+
+        .description {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .prefix {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            user-select: none;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background-color: var(--bg-alert);
+            border: 1px solid rgba(90, 125, 144, 0.4);
+            border-radius: 6px;
+            padding: 12px 14px 12px 105px;
+            color: var(--accent-neon);
+            font-size: 1.1rem;
+            font-family: monospace;
+            letter-spacing: 2px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 10px var(--glow);
+        }
+
+        .btn-calc {
+            width: 100%;
+            background-color: var(--bg-btn-action);
+            color: var(--accent-neon);
+            border: 1px solid var(--accent-neon);
+            border-radius: 6px;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-calc:hover {
+            background-color: var(--accent-neon);
+            color: var(--bg-app);
+            box-shadow: 0 0 15px var(--glow);
+        }
+
+        .results-panel {
+            margin-top: 24px;
+            background-color: var(--bg-alert);
+            border-radius: 8px;
+            padding: 18px;
+            border: 1px solid var(--bg-badge);
+            display: none;
+        }
+
+        .results-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--bg-badge);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            color: var(--accent-neon);
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .result-value.highlight-box {
+            background-color: var(--bg-badge);
+            color: var(--color-success);
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 1.4rem;
+            letter-spacing: 4px;
+            border: 1px solid rgba(62, 224, 138, 0.4);
+            box-shadow: 0 0 12px rgba(62, 224, 138, 0.2);
+        }
+
+        .error-msg {
+            color: var(--color-error);
+            font-size: 0.8rem;
+            margin-top: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Cálculo EAN-13</h1>
+        <p class="description">Ingresa los 5 dígitos variables para generar el código final de caja.</p>
+        
+        <div class="input-group">
+            <label for="digits">Dígitos Variables (5)</label>
+            <div class="input-wrapper">
+                <span class="prefix">0000000 -</span>
+                <input type="text" id="digits" maxlength="5" placeholder="12345" autocomplete="off">
+            </div>
+            <div id="error" class="error-msg">Ingresa exactamente 5 números.</div>
+        </div>
+
+        <button class="btn-calc" onclick="calcularEAN()">Calcular Código</button>
+
+        <div id="results" class="results-panel">
+            <!-- Código principal de caja resaltado arriba -->
+            <div class="result-item" style="margin-bottom: 16px; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <span class="result-label" style="color: var(--color-success); font-weight: bold;">Código a pasar en caja (6 dígitos)</span>
+                <span id="codigoCaja" class="result-value highlight-box" style="width: 100%; text-align: center;">123450</span>
+            </div>
+
+            <!-- Información técnica secundaría abajo -->
+            <div class="result-item">
+                <span class="result-label">EAN-12 Base</span>
+                <span id="ean12" class="result-value">000000012345</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Dígito Verificador</span>
+                <span id="checkDigit" class="result-value">0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">EAN-13 Completo</span>
+                <span id="ean13" class="result-value">0000000123450</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calcularEAN() {
+            const input = document.getElementById('digits').value.trim();
+            const errorElement = document.getElementById('error');
+            const resultsPanel = document.getElementById('results');
+
+            if (!/^\d{5}$/.test(input)) {
+                errorElement.style.display = 'block';
+                resultsPanel.classList.remove('active');
+                return;
+            }
+
+            errorElement.style.display = 'none';
+
+            const prefix = "0000000";
+            const ean12 = prefix + input;
+
+            let suma = 0;
+            for (let i = 0; i < 12; i++) {
+                let digit = parseInt(ean12.charAt(i), 10);
+                if (i % 2 === 0) {
+                    suma += digit * 1;
+                } else {
+                    suma += digit * 3;
+                }
+            }
+
+            let resto = suma % 10;
+            let dv = (resto === 0) ? 0 : (10 - resto);
+
+            const codigoCaja = input + dv;
+            const ean13Completo = ean12 + dv;
+
+            document.getElementById('codigoCaja').textContent = codigoCaja;
+            document.getElementById('ean12').textContent = ean12;
+            document.getElementById('checkDigit').textContent = dv;
+            document.getElementById('ean13').textContent = ean13Completo;
+
+            resultsPanel.classList.add('active');
+        }
+
+        document.getElementById('digits').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calcularEAN();
+            }
+        });
+    </script>
+</body>
+</html>
